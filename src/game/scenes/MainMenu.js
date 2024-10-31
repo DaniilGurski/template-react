@@ -3,70 +3,42 @@ import { Scene } from 'phaser';
 
 export class MainMenu extends Scene
 {
-    logoTween;
-
     constructor ()
     {
         super('MainMenu');
+        this.cursor;
+
     }
 
     create ()
     {
-        this.add.image(512, 384, 'background');
+        const bg = this.add.image(0, 0, 'menu-background')
+        const canvasWidth = this.sys.game.config.width;
+        const canvasHeight = this.sys.game.config.height;
+        const textAlignX = canvasWidth / 2;
+        const textAlignY = canvasHeight / 2;
 
-        this.logo = this.add.image(512, 300, 'logo').setDepth(100);
+        this.cursor = this.input.keyboard.createCursorKeys();
 
-        this.add.text(512, 460, 'Main Menu', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setDepth(100).setOrigin(0.5);
-        
+        bg.setOrigin(0, 0);
+
+        // Stretch to fill the screen
+        bg.displayWidth = canvasWidth;
+        bg.displayHeight = canvasHeight;
+
+        this.add.text(textAlignX, textAlignY, 'Press up arrow to start', { fontSize: '2rem', color: '#fff' }).setOrigin(0.5);
+
         EventBus.emit('current-scene-ready', this);
     }
 
-    changeScene ()
-    {
-        if (this.logoTween)
-        {
-            this.logoTween.stop();
-            this.logoTween = null;
-        }
 
-        this.scene.start('Game');
-    }
-
-    moveLogo (reactCallback)
+    update ()
     {
-        if (this.logoTween)
+        const { up } = this.cursor;
+
+        if (up.isDown)
         {
-            if (this.logoTween.isPlaying())
-            {
-                this.logoTween.pause();
-            }
-            else
-            {
-                this.logoTween.play();
-            }
-        }
-        else
-        {
-            this.logoTween = this.tweens.add({
-                targets: this.logo,
-                x: { value: 750, duration: 3000, ease: 'Back.easeInOut' },
-                y: { value: 80, duration: 1500, ease: 'Sine.easeOut' },
-                yoyo: true,
-                repeat: -1,
-                onUpdate: () => {
-                    if (reactCallback)
-                    {
-                        reactCallback({
-                            x: Math.floor(this.logo.x),
-                            y: Math.floor(this.logo.y)
-                        });
-                    }
-                }
-            });
+            this.scene.start('Game');
         }
     }
 }

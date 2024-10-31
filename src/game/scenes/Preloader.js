@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import dataUtils from '../utils/data-utils';
 
 export class Preloader extends Scene
 {
@@ -9,9 +10,6 @@ export class Preloader extends Scene
 
     init ()
     {
-        //  We loaded this image in our Boot Scene, so we can display it here
-        this.add.image(512, 384, 'background');
-
         //  A simple progress bar. This is the outline of the bar.
         this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
 
@@ -20,28 +18,76 @@ export class Preloader extends Scene
 
         //  Use the 'progress' event emitted by the LoaderPlugin to update the loading bar
         this.load.on('progress', (progress) => {
-
             //  Update the progress bar (our bar is 464px wide, so 100% = 464px)
             bar.width = 4 + (460 * progress);
-
         });
     }
 
     preload ()
-    {
-        //  Load the assets for the game - Replace with your own assets
-        this.load.setPath('assets');
+    {   
+        // JSON data
+        this.load.json("animations", "data/animations.json");
+        this.load.tilemapTiledJSON("game-level", "data/level.json");
 
-        this.load.image('logo', 'logo.png');
-        this.load.image('star', 'star.png');
+
+        // Images
+        this.load.image("terrain-tileset", "assets/terrain.png");
+        this.load.image("menu-background", "assets/menu-background.jpg");
+        this.load.image("gameover-background", "assets/gameover-background.jpg");
+        this.load.image("game-background", "assets/game-background.png");
+        this.load.image("health-bar", "assets/health-bar.png");
+
+
+        // Sounds
+        this.load.audio("jump", "assets/sounds/jump.wav");
+        this.load.audio("coin", "assets/sounds/coin.wav");
+        this.load.audio("player-hit", "assets/sounds/explosion.wav");
+        this.load.audio("player-respawn", "assets/sounds/respawn.wav");
+        this.load.audio("enemy-hit", "assets/sounds/hurt.wav");
+        this.load.audio("tap", "assets/sounds/tap.wav");
+
+
+        // Spritesheets
+        this.load.spritesheet("player", "assets/player.png", {
+            frameWidth: 24,
+            frameHeight: 24,
+        });
+
+        this.load.spritesheet("enemy", "assets/enemy.png", {
+            frameWidth: 24,
+            frameHeight: 24,
+        });
+
+        this.load.spritesheet("coin", "assets/coin.png", {
+            frameWidth: 20,
+            frameHeight: 20,
+        });
     }
 
     create ()
     {
-        //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
-        //  For example, you can define global animations here, so we can use them in other scenes.
-
-        //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
         this.scene.start('MainMenu');
+        this.createAnimations();
+    }
+
+    createAnimations ()
+    {
+        // Get animation data from cache
+        const animations = dataUtils.getAnimations(this);
+
+        animations.forEach((animation) => {
+            // Generate frames if there are any
+            const frames = animation.frames ? 
+            this.anims.generateFrameNumbers(animation.asset, { frames: animation.frames }) :
+            this.anims.generateFrameNumbers(animation.asset)
+
+            this.anims.create({
+                key: animation.key,
+                frames: frames,
+                frameRate: animation.frameRate,
+                repeat: animation.repeat,
+                yoyo: animation.yoyo
+            })
+        })
     }
 }

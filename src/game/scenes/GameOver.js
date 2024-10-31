@@ -6,25 +6,42 @@ export class GameOver extends Scene
     constructor ()
     {
         super('GameOver');
+        this.cursor;
     }
 
     create ()
     {
-        this.cameras.main.setBackgroundColor(0xff0000);
+        const bg = this.add.image(0, 0, 'gameover-background')
+        const canvasWidth = this.sys.game.config.width;
+        const canvasHeight = this.sys.game.config.height;
+        const textAlignX = canvasWidth / 2;
+        const textAlignY = canvasHeight / 2;
+        this.cursor = this.input.keyboard.createCursorKeys();
 
-        this.add.image(512, 384, 'background').setAlpha(0.5);
+        bg.setOrigin(0, 0);
 
-        this.add.text(512, 384, 'Game Over', {
-            fontFamily: 'Arial Black', fontSize: 64, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5).setDepth(100);
+        // Stretch to fill the screen
+        bg.displayWidth = canvasWidth;
+        bg.displayHeight = canvasHeight;
+
+        this.add.text(textAlignX, textAlignY, 'Game Over', { fontSize: '2rem', color: '#fff' }).setOrigin(0.5);
+        this.add.text(textAlignX, textAlignY + 50, 'Press up arrow to restart', { fontSize: '2rem', color: '#fff' }).setOrigin(0.5);
 
         EventBus.emit('current-scene-ready', this);
     }
 
+    update()
+    {
+        const { up } = this.cursor;
+
+        if (up.isDown)
+        {
+            this.changeScene();
+        }
+    }
+
     changeScene ()
     {
-        this.scene.start('MainMenu');
+        this.scene.start('Game');
     }
 }
